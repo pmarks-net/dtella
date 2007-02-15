@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 # These settings are specific to the Purdue network.
 
-version = "SVN"
+version = "0.9.3"
 
 network_key = 'PurdueDtella-11'
 
