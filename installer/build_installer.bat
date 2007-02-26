@@ -1,4 +1,4 @@
-set DTDIR="dtella-purdue-SVN"
+set DTDIR="dtella-purdue-1.0.2"
 set ARC="C:\Program Files\7-Zip\7z.exe"
 set NSIS="C:\Program Files\NSIS\makensisw.exe"
 set OUTDIR="Output"
