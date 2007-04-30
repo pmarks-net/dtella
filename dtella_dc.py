@@ -1632,6 +1632,10 @@ class DtellaBot(object):
             out("%sVERSION_OVERRIDE not needed." % prefix)
 
 
+    def handleCmd_PING(self, out, text, prefix):
+        self.main.analyzer.pingEveryone()
+
+
     def handleCmd_DEBUG(self, out, text, prefix):
 
         out(None)

@@ -212,8 +212,21 @@ class PeerHandler(DatagramProtocol):
         self.main = main
         self.remap_ip = None
 
+        self.statsfile_h = file("data/hopcounts.txt", "w")
+
         self.choke_time = seconds() - self.CHOKE_PERIOD
         self.choke_reported = seconds() - 999
+
+
+    def startProtocol(self):
+
+        t_write = self.transport.write
+        
+        def write(data, addr):
+            self.main.analyzer.logSend(len(data))
+            t_write(data, addr)
+
+        self.transport.write = write
 
 
     def sendPacket(self, data, addr, broadcast=False):
@@ -311,6 +324,8 @@ class PeerHandler(DatagramProtocol):
                 method = getattr(self, 'handlePacket_%s' % kind)
             except AttributeError:
                 raise BadPacketError("Unknown kind: %s" % kind)
+
+            self.main.analyzer.logRecv(len(rawdata))
 
             # arg1: Address the packet came from
             # arg2: The unencrypted packet
@@ -457,6 +472,9 @@ class PeerHandler(DatagramProtocol):
             self.sendAckPacket(nb_ipp, ACK_BROADCAST, ack_flags, ack_key)
             return
 
+        self.statsfile_h.write("%d\n" % (64-hop+1))
+        self.statsfile_h.flush()
+
         # Get the source node object, if any
         try:
             src_n = osm.lookup_ipp[src_ipp]
@@ -494,6 +512,7 @@ class PeerHandler(DatagramProtocol):
             flags |= REJECT_BIT
 
         if hop > 0:
+            
             # Start with the boradcast header
             packet = osm.mrm.broadcastHeader(kind, src_ipp, hop-1, flags)
            
@@ -2017,6 +2036,8 @@ class SyncManager(object):
         self.waitcount = 0
         self.info = {}
 
+        self.statsfile = file("data/nbcounts.txt", "w")
+
         for n in self.main.osm.nodes:
             s = self.info[n.ipp] = self.SyncInfo(n.ipp)
             s.in_total = True
@@ -2200,6 +2221,10 @@ class SyncManager(object):
                 self.main.needPortForward()
                 return
 
+        if not s.in_done:
+            nb_count = len(set(c_nbs + u_nbs))
+            self.statsfile.write("%d\n" % (nb_count))
+
         self.uncontacted.discard(src_ipp)
 
         self.updateStats(s, +1, +1)
@@ -2249,6 +2274,8 @@ class SyncManager(object):
 
         for s in self.info.values():
             dcall_discard(s, 'timeout_dcall')
+
+        self.statsfile.close()
 
 
 ##############################################################################
@@ -4031,6 +4058,9 @@ class DtellaMain_Base(object):
 
         # Pakcet Encoder
         self.pk_enc = dtella_crypto.PacketEncoder(dtella_local.network_key)
+
+        import cs536analysis
+        self.analyzer = cs536analysis.Analyzer(self)
 
         # Register a function that runs before shutting down
         reactor.addSystemEventTrigger('before', 'shutdown',
