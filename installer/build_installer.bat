@@ -1,5 +1,5 @@
 @echo off
-set DTDIR="dtella-purdue-SVN"
+set DTDIR="dtella-purdue-1.2.1"
 set ARC="C:\Program Files\7-Zip\7z.exe"
 set NSIS="C:\Program Files\NSIS\makensis.exe"
 set NSIS64="C:\Program Files (x86)\NSIS\makensisw.exe"

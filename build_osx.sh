@@ -1,6 +1,6 @@
 if [ -z $1 ]
 then
-  FILE_BASE="dtella-purdue-SVN"
+  FILE_BASE="dtella-purdue-1.2.1"
 else
   FILE_BASE="dtella-$1"
 fi
